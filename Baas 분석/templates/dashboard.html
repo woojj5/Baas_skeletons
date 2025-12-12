@@ -27,20 +27,12 @@
             <h2>전기차 데이터 총 라인수, 차량 수 등 소개</h2>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-label">InfluxDB 데이터 라인</div>
-                    <div class="stat-value" id="total-lines">-</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-label">총 차량수</div>
                     <div class="stat-value" id="total-vehicles">-</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">DB 개수</div>
                     <div class="stat-value" id="csv-count">-</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">총 용량</div>
-                    <div class="stat-value" id="total-size">-</div>
                 </div>
             </div>
         </section>
@@ -499,47 +491,12 @@
             </div>
             <div class="modal-body efficiency-detail-body">
                 <div class="efficiency-detail-layout">
-                    <!-- 왼쪽: 기여도 상세 요약 -->
-                    <div class="efficiency-detail-left">
-                        <h3>기여도 상세 (Contribution Details)</h3>
-                        <div id="efficiency-detail-contribution-list">
-                            <!-- JavaScript로 동적 생성 -->
-                        </div>
-                    </div>
-                    
-                    <!-- 오른쪽: 효율 상세 분석 -->
-                    <div class="efficiency-detail-right">
+                    <!-- 효율 상세 분석 -->
+                    <div class="efficiency-detail-right" style="width: 100%;">
                         <h3>효율 상세 분석 (Efficiency Detailed Analysis)</h3>
                         
                         <!-- 데이터 없음 메시지 -->
                         <div class="no-data-message" id="efficiency-no-data-message" style="display: none;"></div>
-                        
-                        <!-- 효율(km/kWh) 시계열 -->
-                        <div class="efficiency-chart-section">
-                            <h4>효율(km/kWh) 시계열</h4>
-                            <div class="chart-info">
-                                <span>평균 <span id="efficiency-avg-value">-</span> km/kWh</span>
-                            </div>
-                            <div class="chart-container-large">
-                                <canvas id="efficiency-timeseries-chart" width="600" height="200"></canvas>
-                            </div>
-                            <div class="criterion-info" id="efficiency-criterion-info">-</div>
-                        </div>
-                        
-                        <!-- 주행거리(km) & 전력량(kWh) -->
-                        <div class="efficiency-chart-section">
-                            <h4>주행거리(km) & 전력량(kWh)</h4>
-                            <div class="chart-container-large">
-                                <canvas id="efficiency-bar-chart" width="600" height="200"></canvas>
-                            </div>
-                            <div class="chart-legend-horizontal">
-                                <span class="legend-item-bar"><span class="legend-color" style="background: #4CAF50;"></span>주행거리(km)</span>
-                                <span class="legend-item-bar"><span class="legend-color" style="background: #FFC107;"></span>전력량(kWh)</span>
-                            </div>
-                            <div class="chart-explanation">
-                                각 일별 주행거리(km)를 전력량(kWh)로 나누어 일별 전비(km/kWh)를 계산합니다.
-                            </div>
-                        </div>
                         
                         <!-- 전비(km/kWh) → 효율 점수 변환 -->
                         <div class="efficiency-chart-section">
@@ -592,32 +549,12 @@
             </div>
             <div class="modal-body efficiency-detail-body">
                 <div class="efficiency-detail-layout">
-                    <!-- 왼쪽: 기여도 상세 요약 -->
-                    <div class="efficiency-detail-left">
-                        <h3>기여도 상세 (Contribution Details)</h3>
-                        <div id="temperature-detail-contribution-list">
-                            <!-- JavaScript로 동적 생성 -->
-                        </div>
-                    </div>
-                    
-                    <!-- 오른쪽: 온도 상세 분석 -->
-                    <div class="efficiency-detail-right">
+                    <!-- 온도 상세 분석 -->
+                    <div class="efficiency-detail-right" style="width: 100%;">
                         <h3>온도 상세 분석 (Temperature Detailed Analysis)</h3>
                         
                         <!-- 데이터 없음 메시지 -->
                         <div class="no-data-message" id="temperature-no-data-message" style="display: none;"></div>
-                        
-                        <!-- 온도(℃) 시계열 -->
-                        <div class="efficiency-chart-section">
-                            <h4>온도(℃) 시계열</h4>
-                            <div class="chart-info">
-                                <span>평균 온도: <span id="temperature-avg-value">-</span>℃</span>
-                            </div>
-                            <div class="chart-container-large">
-                                <canvas id="temperature-timeseries-chart" width="600" height="200"></canvas>
-                            </div>
-                            <div class="criterion-info" id="temperature-criterion-info">-</div>
-                        </div>
                         
                         <!-- 온도 → 점수 변환 -->
                         <div class="efficiency-chart-section">
@@ -670,107 +607,12 @@
             </div>
             <div class="modal-body efficiency-detail-body">
                 <div class="efficiency-detail-layout">
-                    <!-- 왼쪽: 기여도 상세 요약 -->
-                    <div class="efficiency-detail-left">
-                        <h3>기여도 상세 (Contribution Details)</h3>
-                        <div id="cell-balance-detail-contribution-list">
-                            <!-- JavaScript로 동적 생성 -->
-                        </div>
-                    </div>
-                    
-                    <!-- 오른쪽: 셀 밸런스 상세 분석 -->
-                    <div class="efficiency-detail-right">
+                    <!-- 셀 밸런스 상세 분석 -->
+                    <div class="efficiency-detail-right" style="width: 100%;">
                         <h3>셀 밸런스 상세 분석 (Cell Balance Detailed Analysis)</h3>
                         
                         <!-- 데이터 없음 메시지 -->
                         <div class="no-data-message" id="cell-balance-no-data-message" style="display: none;"></div>
-                        
-                        <!-- 전압 요약 차트 (4개) -->
-                        <div class="efficiency-chart-section">
-                            <h4>전압 요약</h4>
-                            <div class="voltage-summary-grid">
-                                <div class="voltage-summary-item">
-                                    <h5>최소 전압</h5>
-                                    <div class="chart-container-small">
-                                        <canvas id="cell-min-voltage-chart" width="200" height="100"></canvas>
-                                    </div>
-                                </div>
-                                <div class="voltage-summary-item">
-                                    <h5>최대 전압</h5>
-                                    <div class="chart-container-small">
-                                        <canvas id="cell-max-voltage-chart" width="200" height="100"></canvas>
-                                    </div>
-                                </div>
-                                <div class="voltage-summary-item">
-                                    <h5>중간 전압</h5>
-                                    <div class="chart-container-small">
-                                        <canvas id="cell-mid-voltage-chart" width="200" height="100"></canvas>
-                                    </div>
-                                </div>
-                                <div class="voltage-summary-item">
-                                    <h5>평균 전압</h5>
-                                    <div class="chart-container-small">
-                                        <canvas id="cell-avg-voltage-chart" width="200" height="100"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 셀 전압 라인 -->
-                        <div class="efficiency-chart-section">
-                            <h4>셀 전압 라인(기간 선택, 최대 100개)</h4>
-                            <div class="chart-controls">
-                                <label>
-                                    <input type="checkbox" id="cell-deviation-emphasis"> 편차 강조(평균 기준)
-                                </label>
-                                <label>
-                                    강조 임계치: <input type="range" id="cell-threshold-slider" min="0" max="100" value="32" step="1">
-                                    <span id="cell-threshold-value">32</span> mV
-                                </label>
-                            </div>
-                            <div class="chart-container-large">
-                                <canvas id="cell-voltage-line-chart" width="600" height="200"></canvas>
-                            </div>
-                        </div>
-                        
-                        <!-- 셀 평균 전압 편차 -->
-                        <div class="efficiency-chart-section">
-                            <h4>셀 평균 전압 편차(mV) - 기준: 평균</h4>
-                            <div class="chart-container-large">
-                                <canvas id="cell-avg-deviation-chart" width="600" height="200"></canvas>
-                            </div>
-                        </div>
-                        
-                        <!-- 셀 전압 표준편차 & 범위 -->
-                        <div class="efficiency-chart-section">
-                            <div class="cell-charts-row">
-                                <div class="cell-chart-half">
-                                    <h4>셀 전압 표준편차(mV)</h4>
-                                    <div class="chart-controls-small">
-                                        <label><input type="checkbox"> 상대</label>
-                                        <label><input type="checkbox"> 내림차순 상위</label>
-                                        <input type="range" min="0" max="50" value="24" step="1">
-                                    </div>
-                                    <div class="chart-container-medium">
-                                        <canvas id="cell-std-deviation-chart" width="300" height="150"></canvas>
-                                    </div>
-                                </div>
-                                <div class="cell-chart-half">
-                                    <h4>셀 전압 범위(max-min, mV)</h4>
-                                    <div class="chart-controls-small">
-                                        <label><input type="checkbox"> 상대</label>
-                                        <label><input type="checkbox"> 내림차순 상위</label>
-                                        <input type="range" min="0" max="50" value="24" step="1">
-                                    </div>
-                                    <div class="chart-container-medium">
-                                        <canvas id="cell-range-chart" width="300" height="150"></canvas>
-                                    </div>
-                                    <div class="cell-top-deviation">
-                                        상위 편차 셀: <span id="cell-top-deviation-list">-</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         
                         <!-- 점수 계산 결과 -->
                         <div class="efficiency-result-section">

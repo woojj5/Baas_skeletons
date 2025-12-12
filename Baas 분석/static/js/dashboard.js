@@ -74,10 +74,8 @@ function updateStats(data) {
         return num.toLocaleString();
     }
     
-    document.getElementById('total-lines').textContent = formatNumber(influx.total_lines);
     // 총 차량수는 updateTotalVehicles에서 별도로 업데이트
     document.getElementById('csv-count').textContent = influx.csv_count.toLocaleString() + '개';
-    document.getElementById('total-size').textContent = influx.total_size_gb + 'GB';
     document.getElementById('field-count').textContent = influx.field_count + '개';
     document.getElementById('last-update').textContent = influx.last_update;
 }
@@ -1203,10 +1201,7 @@ function openTemperatureDetail() {
     // 주행 관련 데이터 가용성 확인
     const hasDrivingData = (sectionCounts.drive > 0 || sectionCounts.parking > 0);
     
-    // 왼쪽: 기여도 상세 요약 업데이트
-    updateTemperatureDetailContributionList(details);
-    
-    // 오른쪽: 온도 상세 분석 업데이트
+    // 온도 상세 분석 업데이트
     if (hasDrivingData) {
         updateTemperatureDetailAnalysis(details.temperature, batteryScore, basicInfo);
         // 데이터 없음 메시지 숨김
@@ -1301,19 +1296,9 @@ function updateTemperatureDetailContributionList(details) {
 function updateTemperatureDetailAnalysis(temperatureData, batteryScore, basicInfo) {
     if (!temperatureData) return;
     
-    // 평균 온도 표시
-    document.getElementById('temperature-avg-value').textContent = temperatureData.value || '-';
-    
-    // 기준 정보 표시
-    const criterionText = `기준: 최적 30℃ (100점), 나쁨 20℃ 이하 또는 40℃ 이상`;
-    document.getElementById('temperature-criterion-info').textContent = criterionText;
-    
     // 현재 온도 표시
     document.getElementById('temperature-optimal-criterion').textContent = `최적 30℃ → 100점, 온도가 30℃에서 멀어질수록 점수 감소 (최소 40점)`;
     document.getElementById('temperature-current-value').textContent = `현재 온도: ${temperatureData.value || 0}℃ → ${batteryScore.scores.temperature.toFixed(1)}점`;
-    
-    // 시계열 차트 그리기
-    drawTemperatureTimeSeriesChart(temperatureData.value || 0);
     
     // 변환 차트 그리기
     drawTemperatureConversionChart(temperatureData.value || 0, batteryScore.scores.temperature);
@@ -1429,15 +1414,40 @@ function drawTemperatureConversionChart(avgTemperature, score) {
     const canvas = document.getElementById('temperature-conversion-chart');
     if (!canvas) return;
     
+    // canvas 크기를 충분히 크게 설정
+    const container = canvas.parentElement;
+    let displayWidth, displayHeight;
+    
+    if (container) {
+        displayWidth = container.clientWidth - 30;
+        displayHeight = 300;
+    } else {
+        displayWidth = 1200;
+        displayHeight = 450;
+    }
+    
+    // 실제 canvas 해상도를 충분히 크게 설정
+    canvas.width = Math.max(displayWidth, 1200);
+    canvas.height = Math.max(displayHeight, 450);
+    
+    // CSS로 표시 크기 설정
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
+    
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
     
     ctx.clearRect(0, 0, width, height);
     
+    // X축 범위를 더 넓게 설정
+    const xMin = 0;
+    const xMax = 50;
+    const xRange = xMax - xMin;
+    
     // 변환 곡선 계산: Score = 100 - 2 × (T - 30), [40, 100] 범위로 클리핑
     const points = [];
-    for (let x = 10; x <= 38; x += 0.1) {
+    for (let x = xMin; x <= xMax; x += 0.1) {
         let y = 100 - 2 * (x - 30);
         y = Math.max(40, Math.min(100, y));
         points.push({ x, y });
@@ -1446,8 +1456,9 @@ function drawTemperatureConversionChart(avgTemperature, score) {
     // 그리드
     ctx.strokeStyle = '#e0e0e0';
     ctx.lineWidth = 1;
-    for (let i = 0; i <= 10; i++) {
-        const x = (i / 10) * (width - 100) + 50;
+    const gridSteps = 10;
+    for (let i = 0; i <= gridSteps; i++) {
+        const x = 50 + ((i / gridSteps) * (width - 100));
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height - 30);
@@ -1462,13 +1473,16 @@ function drawTemperatureConversionChart(avgTemperature, score) {
         ctx.stroke();
     }
     
+    // 선 두께를 canvas 크기에 비례해서 조정
+    const lineWidth = Math.max(2, Math.floor(width / 400));
+    
     // 변환 곡선
     ctx.fillStyle = 'rgba(76, 175, 80, 0.2)';
     ctx.strokeStyle = '#667eea';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = lineWidth;
     ctx.beginPath();
     for (let i = 0; i < points.length; i++) {
-        const x = 50 + ((points[i].x - 10) / 28) * (width - 100);
+        const x = 50 + ((points[i].x - xMin) / xRange) * (width - 100);
         const y = (height - 30) - (points[i].y / 100) * (height - 30);
         if (i === 0) {
             ctx.moveTo(x, y);
@@ -1476,19 +1490,19 @@ function drawTemperatureConversionChart(avgTemperature, score) {
             ctx.lineTo(x, y);
         }
     }
-    ctx.lineTo(50 + ((38 - 10) / 28) * (width - 100), height - 30);
+    ctx.lineTo(50 + ((xMax - xMin) / xRange) * (width - 100), height - 30);
     ctx.lineTo(50, height - 30);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
     
     // 기준선 (20℃, 30℃)
-    const temp20X = 50 + ((20 - 10) / 28) * (width - 100);
-    const temp30X = 50 + ((30 - 10) / 28) * (width - 100);
+    const temp20X = 50 + ((20 - xMin) / xRange) * (width - 100);
+    const temp30X = 50 + ((30 - xMin) / xRange) * (width - 100);
     
     ctx.setLineDash([5, 5]);
     ctx.strokeStyle = '#f44336';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(temp20X, 0);
     ctx.lineTo(temp20X, height - 30);
@@ -1501,27 +1515,30 @@ function drawTemperatureConversionChart(avgTemperature, score) {
     ctx.stroke();
     
     // 현재 온도 표시선
-    const currentX = 50 + ((avgTemperature - 10) / 28) * (width - 100);
-    ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = '#667eea';
-    ctx.lineWidth = 2;
+    const currentX = 50 + ((avgTemperature - xMin) / xRange) * (width - 100);
+    ctx.strokeStyle = '#ff9800';
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(currentX, 0);
     ctx.lineTo(currentX, height - 30);
     ctx.stroke();
     ctx.setLineDash([]);
     
+    // 폰트 크기를 canvas 크기에 비례해서 조정
+    const fontSize = Math.max(16, Math.floor(width / 75));
+    
     // X축 라벨
-    ctx.fillStyle = '#666';
-    ctx.font = '10px sans-serif';
+    ctx.fillStyle = '#333';
+    ctx.font = fontSize + 'px sans-serif';
     ctx.textAlign = 'center';
-    for (let i = 0; i <= 7; i++) {
-        const value = 10 + (i * 4);
-        ctx.fillText(value.toString(), 50 + ((value - 10) / 28) * (width - 100), height - 10);
+    for (let i = 0; i <= 10; i++) {
+        const value = i * 5;
+        ctx.fillText(value.toString(), 50 + ((value - xMin) / xRange) * (width - 100), height - 10);
     }
     
     // Y축 라벨
     ctx.textAlign = 'right';
+    ctx.font = fontSize + 'px sans-serif';
     for (let i = 0; i <= 10; i++) {
         ctx.fillText((i * 10).toString(), 45, (height - 30) - (i / 10) * (height - 30) + 4);
     }
@@ -1570,10 +1587,7 @@ function openCellBalanceDetail() {
     // 주행 관련 데이터 가용성 확인
     const hasDrivingData = (sectionCounts.drive > 0 || sectionCounts.parking > 0);
     
-    // 왼쪽: 기여도 상세 요약 업데이트
-    updateCellBalanceDetailContributionList(details);
-    
-    // 오른쪽: 셀 밸런스 상세 분석 업데이트
+    // 셀 밸런스 상세 분석 업데이트
     if (hasDrivingData) {
         updateCellBalanceDetailAnalysis(details.cell_imbalance, batteryScore, basicInfo);
         // 데이터 없음 메시지 숨김
@@ -1582,7 +1596,6 @@ function openCellBalanceDetail() {
     } else {
         // 데이터 없음 메시지 표시
         showNoDataMessage('cell-balance-detail-modal', 'cell-balance-no-data-message', '주행');
-        // 차트는 그리지 않음
     }
     
     // 모달 표시
@@ -1737,19 +1750,6 @@ function updateCellBalanceDetailContributionList(details) {
 function updateCellBalanceDetailAnalysis(cellData, batteryScore, basicInfo) {
     if (!cellData) return;
     
-    // 전압 요약 차트 그리기
-    drawVoltageSummaryCharts();
-    
-    // 셀 전압 라인 차트 그리기
-    drawCellVoltageLineChart();
-    
-    // 셀 평균 전압 편차 차트 그리기
-    drawCellAvgDeviationChart();
-    
-    // 셀 전압 표준편차 & 범위 차트 그리기
-    drawCellStdDeviationChart();
-    drawCellRangeChart();
-    
     // 결과 테이블 업데이트
     const avgDeviation = cellData.value ? (cellData.value * 1000).toFixed(1) : '0.0'; // V를 mV로 변환
     document.getElementById('result-avg-cell-deviation').textContent = `${avgDeviation} mV`;
@@ -1759,23 +1759,6 @@ function updateCellBalanceDetailAnalysis(cellData, batteryScore, basicInfo) {
     // 설명 텍스트
     const explanation = `설명: 평균 셀 편차 ${avgDeviation}mV로, 편차가 작을수록 점수가 높아지는 구조에서 ${batteryScore.scores.cell_imbalance.toFixed(1)}점을 받았습니다. 이 점수는 전체 배터리 점수에 ${cellData.contribution.toFixed(1)}점을 기여하며, 동종 차량 대비 셀 밸런스 수준은 백분위 ${cellData.percentile}% 부근입니다.`;
     document.getElementById('result-cell-explanation-text').textContent = explanation;
-    
-    // 상위 편차 셀 목록 (실제 데이터가 없으면 표시하지 않음)
-    // TODO: 실제 셀 편차 데이터를 API에서 가져와서 사용해야 함
-    const cellTopDeviationList = document.getElementById('cell-top-deviation-list');
-    if (cellTopDeviationList) {
-        cellTopDeviationList.textContent = '데이터 없음';
-    }
-    
-    // 슬라이더 이벤트
-    const slider = document.getElementById('cell-threshold-slider');
-    const sliderValue = document.getElementById('cell-threshold-value');
-    if (slider && sliderValue) {
-        slider.addEventListener('input', function() {
-            sliderValue.textContent = this.value;
-            drawCellVoltageLineChart();
-        });
-    }
 }
 
 // 전압 요약 차트 그리기 (4개)
@@ -2238,10 +2221,7 @@ function openEfficiencyDetail() {
     // 주행 관련 데이터 가용성 확인
     const hasDrivingData = (sectionCounts.drive > 0 || sectionCounts.parking > 0);
     
-    // 왼쪽: 기여도 상세 요약 업데이트
-    updateEfficiencyDetailContributionList(details);
-    
-    // 오른쪽: 효율 상세 분석 업데이트
+    // 효율 상세 분석 업데이트
     if (hasDrivingData) {
         updateEfficiencyDetailAnalysis(details.efficiency, batteryScore, basicInfo);
         // 데이터 없음 메시지 숨김
@@ -2336,9 +2316,6 @@ function updateEfficiencyDetailContributionList(details) {
 function updateEfficiencyDetailAnalysis(efficiencyData, batteryScore, basicInfo) {
     if (!efficiencyData) return;
     
-    // 평균 효율 표시
-    document.getElementById('efficiency-avg-value').textContent = efficiencyData.value || '-';
-    
     // 기준값 계산 (차종/연식별)
     const carType = basicInfo.car_type || '중형';
     const ageYears = parseFloat(basicInfo.age_string?.match(/(\d+\.\d+)년/)?.[1]) || 0;
@@ -2360,19 +2337,9 @@ function updateEfficiencyDetailAnalysis(efficiencyData, batteryScore, basicInfo)
     minVal = minVal - ageAdjustment;
     maxVal = Math.max(0.0, maxVal - ageAdjustment);
     
-    // 기준 정보 표시
-    const criterionText = `기준 (차종: ${carType}, 연식: ${ageYears.toFixed(1)}년): 나쁨 ${minVal.toFixed(1)} km/kWh, 좋음 ${maxVal.toFixed(1)} km/kWh`;
-    document.getElementById('efficiency-criterion-info').textContent = criterionText;
-    
     // 변환 기준 표시
     document.getElementById('efficiency-bad-criterion').textContent = `${minVal.toFixed(1)} km/kWh 이하 → 40점 (나쁨)`;
     document.getElementById('efficiency-good-criterion').textContent = `${maxVal.toFixed(1)} km/kWh 이상 → 100점 (좋음)`;
-    
-    // 시계열 차트 그리기
-    drawEfficiencyTimeSeriesChart(efficiencyData.value || 0, minVal, maxVal);
-    
-    // 바 차트 그리기 (주행거리 & 전력량)
-    drawEfficiencyBarChart();
     
     // 변환 차트 그리기
     drawEfficiencyConversionChart(efficiencyData.value || 0, minVal, maxVal, batteryScore.scores.efficiency);
@@ -2530,15 +2497,40 @@ function drawEfficiencyConversionChart(avgEfficiency, minVal, maxVal, score) {
     const canvas = document.getElementById('efficiency-conversion-chart');
     if (!canvas) return;
     
+    // canvas 크기를 충분히 크게 설정
+    const container = canvas.parentElement;
+    let displayWidth, displayHeight;
+    
+    if (container) {
+        displayWidth = container.clientWidth - 30;
+        displayHeight = 300;
+    } else {
+        displayWidth = 1200;
+        displayHeight = 450;
+    }
+    
+    // 실제 canvas 해상도를 충분히 크게 설정
+    canvas.width = Math.max(displayWidth, 1200);
+    canvas.height = Math.max(displayHeight, 450);
+    
+    // CSS로 표시 크기 설정
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
+    
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
     
     ctx.clearRect(0, 0, width, height);
     
+    // X축 범위를 동적으로 설정 (최소값과 최대값, 현재값을 고려)
+    const xMin = Math.max(0, Math.floor(minVal) - 1);
+    const xMax = Math.max(12, Math.ceil(Math.max(maxVal, avgEfficiency)) + 1);
+    const xRange = xMax - xMin;
+    
     // 변환 곡선 그리기
     const points = [];
-    for (let x = 0; x <= 10; x += 0.1) {
+    for (let x = xMin; x <= xMax; x += 0.1) {
         let y;
         if (x <= minVal) {
             y = 40;
@@ -2554,8 +2546,9 @@ function drawEfficiencyConversionChart(avgEfficiency, minVal, maxVal, score) {
     // 그리드
     ctx.strokeStyle = '#e0e0e0';
     ctx.lineWidth = 1;
-    for (let i = 0; i <= 10; i++) {
-        const x = (i / 10) * (width - 100) + 50;
+    const gridSteps = Math.ceil(xRange);
+    for (let i = 0; i <= gridSteps; i++) {
+        const x = 50 + ((i / gridSteps) * (width - 100));
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height - 30);
@@ -2570,12 +2563,15 @@ function drawEfficiencyConversionChart(avgEfficiency, minVal, maxVal, score) {
         ctx.stroke();
     }
     
+    // 선 두께를 canvas 크기에 비례해서 조정
+    const lineWidth = Math.max(2, Math.floor(width / 400));
+    
     // 변환 곡선
     ctx.strokeStyle = '#667eea';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = lineWidth;
     ctx.beginPath();
     for (let i = 0; i < points.length; i++) {
-        const x = 50 + (points[i].x / 10) * (width - 100);
+        const x = 50 + ((points[i].x - xMin) / xRange) * (width - 100);
         const y = (height - 30) - (points[i].y / 100) * (height - 30);
         if (i === 0) {
             ctx.moveTo(x, y);
@@ -2585,27 +2581,52 @@ function drawEfficiencyConversionChart(avgEfficiency, minVal, maxVal, score) {
     }
     ctx.stroke();
     
-    // 현재 값 표시선
-    const currentX = 50 + (avgEfficiency / 10) * (width - 100);
+    // 기준선 표시 (minVal, maxVal)
+    const minX = 50 + ((minVal - xMin) / xRange) * (width - 100);
+    const maxX = 50 + ((maxVal - xMin) / xRange) * (width - 100);
+    
     ctx.setLineDash([5, 5]);
     ctx.strokeStyle = '#f44336';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(minX, 0);
+    ctx.lineTo(minX, height - 30);
+    ctx.stroke();
+    
+    ctx.strokeStyle = '#4CAF50';
+    ctx.beginPath();
+    ctx.moveTo(maxX, 0);
+    ctx.lineTo(maxX, height - 30);
+    ctx.stroke();
+    
+    // 현재 값 표시선
+    const currentX = 50 + ((avgEfficiency - xMin) / xRange) * (width - 100);
+    ctx.strokeStyle = '#ff9800';
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(currentX, 0);
     ctx.lineTo(currentX, height - 30);
     ctx.stroke();
     ctx.setLineDash([]);
     
+    // 폰트 크기를 canvas 크기에 비례해서 조정
+    const fontSize = Math.max(16, Math.floor(width / 75));
+    
     // X축 라벨
-    ctx.fillStyle = '#666';
-    ctx.font = '10px sans-serif';
+    ctx.fillStyle = '#333';
+    ctx.font = fontSize + 'px sans-serif';
     ctx.textAlign = 'center';
-    for (let i = 0; i <= 10; i++) {
-        ctx.fillText(i.toString(), 50 + (i / 10) * (width - 100), height - 10);
+    const labelStep = Math.max(1, Math.ceil(xRange / 12));
+    for (let i = 0; i <= xMax; i += labelStep) {
+        if (i >= xMin) {
+            const x = 50 + ((i - xMin) / xRange) * (width - 100);
+            ctx.fillText(i.toFixed(1), x, height - 10);
+        }
     }
     
     // Y축 라벨
     ctx.textAlign = 'right';
+    ctx.font = fontSize + 'px sans-serif';
     for (let i = 0; i <= 10; i++) {
         ctx.fillText((i * 10).toString(), 45, (height - 30) - (i / 10) * (height - 30) + 4);
     }

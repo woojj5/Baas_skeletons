@@ -1569,18 +1569,22 @@ body {
 }
 
 .efficiency-detail-layout {
-    display: grid;
-    grid-template-columns: 400px 1fr;
-    gap: 30px;
+    display: block;
 }
 
 .efficiency-detail-left h3,
 .efficiency-detail-right h3 {
-    font-size: 18px;
+    font-size: 24px;
     color: #2c3e50;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
     border-bottom: 2px solid #e0e0e0;
+    font-weight: 600;
+}
+
+.efficiency-detail-right {
+    width: 100% !important;
+    max-width: 100%;
 }
 
 .efficiency-chart-section {
@@ -1588,32 +1592,38 @@ body {
     background: white;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
-    padding: 20px;
+    padding: 25px;
 }
 
 .efficiency-chart-section h4 {
-    font-size: 16px;
+    font-size: 20px;
     color: #2c3e50;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    font-weight: 600;
 }
 
 .chart-info {
-    margin-bottom: 10px;
-    font-size: 14px;
+    margin-bottom: 15px;
+    font-size: 16px;
     color: #666;
+    font-weight: 500;
 }
 
 .chart-container-large {
-    margin: 15px 0;
-    height: 200px;
+    margin: 20px 0;
+    height: 300px;
     background: #fafafa;
     border-radius: 4px;
-    padding: 10px;
+    padding: 15px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .chart-container-large canvas {
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100%;
 }
 
 .criterion-info {
@@ -1639,31 +1649,34 @@ body {
 }
 
 .chart-explanation {
-    margin-top: 10px;
-    font-size: 12px;
+    margin-top: 15px;
+    font-size: 15px;
     color: #666;
     font-style: italic;
+    line-height: 1.6;
 }
 
 .conversion-legend {
     display: flex;
     justify-content: space-between;
-    margin-top: 10px;
-    font-size: 12px;
+    margin-top: 15px;
+    font-size: 15px;
     color: #666;
+    font-weight: 500;
 }
 
 .efficiency-result-section {
     background: #f8f9fa;
     border-radius: 6px;
-    padding: 20px;
+    padding: 30px;
     border-left: 4px solid #667eea;
 }
 
 .efficiency-result-section h4 {
-    font-size: 16px;
+    font-size: 20px;
     color: #2c3e50;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    font-weight: 600;
 }
 
 .efficiency-result-table {
@@ -1681,17 +1694,18 @@ body {
 }
 
 .efficiency-result-table th {
-    padding: 12px;
+    padding: 18px;
     text-align: left;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 18px;
 }
 
 .efficiency-result-table td {
-    padding: 12px;
+    padding: 18px;
     border-bottom: 1px solid #e0e0e0;
-    font-size: 14px;
+    font-size: 18px;
     color: #2c3e50;
+    font-weight: 500;
 }
 
 .efficiency-result-table tbody tr:last-child td {
@@ -1699,13 +1713,13 @@ body {
 }
 
 .result-explanation {
-    margin-top: 15px;
-    padding: 15px;
+    margin-top: 20px;
+    padding: 20px;
     background: white;
     border-radius: 4px;
-    font-size: 13px;
+    font-size: 16px;
     color: #666;
-    line-height: 1.6;
+    line-height: 1.8;
 }
 
 /* 셀 밸런스 상세 분석 스타일 */
@@ -1838,10 +1852,6 @@ body {
 }
 
 @media (max-width: 1200px) {
-    .efficiency-detail-layout {
-        grid-template-columns: 1fr;
-    }
-    
     .cell-charts-row {
         grid-template-columns: 1fr;
     }
