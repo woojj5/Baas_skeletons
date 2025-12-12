@@ -14,14 +14,24 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // 탭 전환
-function switchTab(tab) {
+function switchTab(tab, event) {
     currentTab = tab;
     
     // 탭 버튼 활성화
     document.querySelectorAll('.nav-tab').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    // event가 있으면 해당 버튼에 active 추가, 없으면 탭 이름으로 찾기
+    if (event && event.target) {
+        event.target.classList.add('active');
+    } else {
+        const tabButtons = document.querySelectorAll('.nav-tab');
+        tabButtons.forEach(btn => {
+            if (btn.textContent.includes(tab === 'overview' ? '개요' : '분석')) {
+                btn.classList.add('active');
+            }
+        });
+    }
     
     // 탭 콘텐츠 표시
     document.querySelectorAll('.tab-content').forEach(content => {
@@ -96,7 +106,7 @@ function updateVehicleTypes(vehicleTypes) {
     }
     
     container.innerHTML = vehicleTypes.map(item => `
-        <div class="vehicle-type-item">
+        <div class="vehicle-type-item clickable-vehicle-type" data-car-type="${escapeHtml(item.car_type)}" style="cursor: pointer;">
             <span class="vehicle-type-name">${escapeHtml(item.car_type)}</span>
             <div class="vehicle-type-count">
                 <span class="vehicle-type-number">${item.count}대</span>
@@ -104,6 +114,47 @@ function updateVehicleTypes(vehicleTypes) {
             </div>
         </div>
     `).join('');
+    
+    // 차종 클릭 이벤트 추가
+    container.querySelectorAll('.clickable-vehicle-type').forEach(item => {
+        item.addEventListener('click', function() {
+            const carType = this.getAttribute('data-car-type');
+            showVehiclesByCarType(carType);
+        });
+    });
+}
+
+// 차종별 차량 표시 함수
+function showVehiclesByCarType(carType) {
+    // 데이터 분석 탭으로 전환
+    // 탭 버튼 찾기 및 활성화
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.includes('분석')) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // 탭 콘텐츠 표시
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    const analysisTab = document.getElementById('analysis-tab');
+    if (analysisTab) {
+        analysisTab.classList.add('active');
+        currentTab = 'analysis';
+    }
+    
+    // 차종 필터 설정
+    const carTypeFilter = document.getElementById('car-type-filter');
+    if (carTypeFilter) {
+        carTypeFilter.value = carType;
+    }
+    
+    // 필터 적용 (약간의 지연을 두어 DOM 업데이트 후 실행)
+    setTimeout(() => {
+        applyFilters();
+    }, 100);
 }
 
 // 완성도 차트 업데이트
