@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baas Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>Baas Dashboard</h1>
+            <div class="last-update">
+                마지막 업데이트: <span id="last-update">-</span>
+                <button class="refresh-btn" onclick="refreshData()" title="새로고침">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 0V3.2M8 12.8V16M3.2 8H0M16 8H12.8M13.657 2.343L11.314 4.686M4.686 11.314L2.343 13.657M13.657 13.657L11.314 11.314M4.686 4.686L2.343 2.343" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M8 12C10.2091 12 12 10.2091 12 8C12 5.79086 10.2091 4 8 4C5.79086 4 4 5.79086 4 8C4 10.2091 5.79086 12 8 12Z" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- 전기차 데이터 총 라인수, 차량 수 등 소개 -->
+        <section class="stats-section">
+            <h2>전기차 데이터 총 라인수, 차량 수 등 소개</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">InfluxDB 데이터 라인</div>
+                    <div class="stat-value" id="total-lines">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">총 차량수</div>
+                    <div class="stat-value" id="total-vehicles">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">DB 개수</div>
+                    <div class="stat-value" id="csv-count">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">총 용량</div>
+                    <div class="stat-value" id="total-size">-</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 네비게이션 및 데이터 필드 목록 -->
+        <section class="nav-section">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('overview')">데이터 개요</button>
+                <button class="nav-tab" onclick="switchTab('analysis')">데이터 분석</button>
+            </div>
+        </section>
+
+        <div class="content-wrapper">
+            <!-- 메인 콘텐츠 영역 -->
+            <main class="main-content">
+                <div id="overview-tab" class="tab-content active">
+                    <div class="overview-content-wrapper">
+                        <!-- 왼쪽: 데이터 필드 목록 -->
+                        <aside class="sidebar">
+                            <div class="field-list-header">
+                                <h3>데이터 필드 목록</h3>
+                                <div class="field-list-controls">
+                                    <button class="field-control-btn" id="field-toggle-btn" onclick="toggleFieldList()">접기</button>
+                                </div>
+                            </div>
+                            <div class="field-info-header">
+                                <button class="collection-period-btn">
+                                    <span>📅</span>
+                                    <span>수집 기간</span>
+                                </button>
+                                <span class="collection-period-value">2023-10-01 ~ 현재</span>
+                            </div>
+                            <div class="field-count-info">
+                                <span class="field-label">필드 수</span>
+                                <span class="field-value" id="field-count">-</span>
+                            </div>
+                            <div class="field-categories" id="field-categories">
+                                <!-- JavaScript로 동적 생성 -->
+                                <div class="loading">데이터 로딩 중...</div>
+                            </div>
+                        </aside>
+
+                        <!-- 오른쪽: 저장된 데이터 차종 수 현황 -->
+                        <div class="overview-main">
+                            <section class="vehicle-types-section">
+                                <h3>저장된 데이터 차종 수 현황</h3>
+                                <div class="vehicle-types-list" id="vehicle-types-list">
+                                    <div class="loading">데이터 로딩 중...</div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="analysis-tab" class="tab-content">
+                    <!-- 차량별 배터리 성능 -->
+                    <section class="vehicle-battery-performance-section">
+                        <div class="performance-header">
+                            <div>
+                                <h2>차량별 배터리 성능</h2>
+                                <p class="performance-subtitle">전체 <span id="total-vehicles-count">0</span>대 차량의 배터리 상태 및 성능 등급</p>
+                            </div>
+                            <div class="performance-controls">
+                                <select class="period-filter" id="period-filter">
+                                    <option value="all">전체</option>
+                                    <option value="1year">1년 이상</option>
+                                    <option value="6months">6개월 이상</option>
+                                    <option value="3months">3개월 이상</option>
+                                    <option value="less3months">3개월 미만</option>
+                                </select>
+                                <button class="view-btn" onclick="openScoreCriteria()">점수 기준</button>
+                                <button class="view-btn active" id="table-view-btn" onclick="switchView('table')">테이블 보기</button>
+                                <button class="view-btn" id="chart-view-btn" onclick="switchView('chart')">차트 보기</button>
+                            </div>
+                        </div>
+                        
+                        <div class="performance-summary">
+                            <div class="summary-box clickable active" onclick="filterByGrade('all')" id="summary-box-all">
+                                <div class="summary-label">전체 차량</div>
+                                <div class="summary-value" id="summary-total">0</div>
+                            </div>
+                            <div class="summary-box excellent clickable" onclick="filterByGrade('excellent')" id="summary-box-excellent">
+                                <div class="summary-label">매우 좋음</div>
+                                <div class="summary-value" id="summary-excellent">0</div>
+                            </div>
+                            <div class="summary-box good clickable" onclick="filterByGrade('good')" id="summary-box-good">
+                                <div class="summary-label">좋음</div>
+                                <div class="summary-value" id="summary-good">0</div>
+                            </div>
+                            <div class="summary-box normal clickable" onclick="filterByGrade('normal')" id="summary-box-normal">
+                                <div class="summary-label">보통</div>
+                                <div class="summary-value" id="summary-normal">0</div>
+                            </div>
+                            <div class="summary-box bad clickable" onclick="filterByGrade('bad')" id="summary-box-bad">
+                                <div class="summary-label">나쁨</div>
+                                <div class="summary-value" id="summary-bad">0</div>
+                            </div>
+                        </div>
+
+                        <div class="performance-content">
+                            <div class="performance-main">
+                                <div class="table-filters">
+                                    <select class="car-type-filter" id="car-type-filter">
+                                        <option value="all">전체 차종</option>
+                                    </select>
+                                    <input type="text" class="search-input" id="vehicle-search" placeholder="차량 ID 또는 차종으로 검색">
+                                    <select class="period-filter-small" id="period-filter-small">
+                                        <option value="all">전체</option>
+                                        <option value="1year">1년 이상</option>
+                                        <option value="6months">6개월 이상</option>
+                                        <option value="3months">3개월 이상</option>
+                                        <option value="less3months">3개월 미만</option>
+                                    </select>
+                                </div>
+                                
+                                <div id="table-view" class="view-content active">
+                                    <div class="table-container">
+                                        <table class="vehicle-table">
+                                            <thead>
+                                                <tr>
+                                                    <th><input type="checkbox" id="select-all"></th>
+                                                    <th>차량 ID</th>
+                                                    <th>차종</th>
+                                                    <th>배터리 점수</th>
+                                                    <th>에너지 효율</th>
+                                                    <th>마지막 충전</th>
+                                                    <th>연식</th>
+                                                    <th>수집 기간</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="vehicle-table-body">
+                                                <tr><td colspan="8" class="loading">데이터 로딩 중...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                                <div id="chart-view" class="view-content">
+                                    <div class="chart-container">
+                                        <h3>차량별 배터리 성능 차트</h3>
+                                        <canvas id="battery-bar-chart" width="800" height="400"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="performance-sidebar">
+                                <div class="distribution-chart">
+                                    <h3>차량 배터리 성능 분포 시각화</h3>
+                                    <div class="distribution-stats">
+                                        <div class="stat-item">
+                                            <div class="stat-label">총 주행거리</div>
+                                            <div class="stat-value" id="total-mileage">-</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-label">평균 에너지 효율</div>
+                                            <div class="stat-value" id="avg-efficiency">-</div>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-label">평균 배터리 건강도</div>
+                                            <div class="stat-value" id="avg-battery-health">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="donut-chart-container">
+                                        <canvas id="donut-chart" width="300" height="300"></canvas>
+                                    </div>
+                                    <div class="chart-legend">
+                                        <div class="legend-item">
+                                            <span class="legend-color" style="background: #4CAF50;"></span>
+                                            <span>매우 좋음 (75~100%)</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <span class="legend-color" style="background: #2196F3;"></span>
+                                            <span>좋음 (50~74%)</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <span class="legend-color" style="background: #FFC107;"></span>
+                                            <span>보통 (25~49%)</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <span class="legend-color" style="background: #FF9800;"></span>
+                                            <span>나쁨 (15~24%)</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <span class="legend-color" style="background: #F44336;"></span>
+                                            <span>매우 나쁨 (<15%)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 데이터 완성도 분석 -->
+                    <section class="recent-files-section">
+                        <h3>데이터 완성도 분석</h3>
+                        <div class="completeness-chart">
+                            <div class="completeness-item">
+                                <div class="completeness-label">데이터 많음</div>
+                                <div class="completeness-bar">
+                                    <div class="completeness-fill" id="plenty-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="completeness-value" id="plenty-value">0대 (0%)</div>
+                            </div>
+                            <div class="completeness-item">
+                                <div class="completeness-label">데이터 보통</div>
+                                <div class="completeness-bar">
+                                    <div class="completeness-fill" id="normal-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="completeness-value" id="normal-value">0대 (0%)</div>
+                            </div>
+                            <div class="completeness-item">
+                                <div class="completeness-label">데이터 비어 있음</div>
+                                <div class="completeness-bar">
+                                    <div class="completeness-fill" id="empty-bar" style="width: 0%"></div>
+                                </div>
+                                <div class="completeness-value" id="empty-value">0대 (0%)</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 배터리 점수 해설 -->
+                    <section class="battery-score-section">
+                        <h3>배터리 점수 해설</h3>
+                        <div class="battery-score-content">
+                            <div class="battery-score-left">
+                                <div class="battery-score-main">
+                                    <div class="battery-score-value" id="battery-final-score">-</div>
+                                    <div class="battery-score-label">점</div>
+                                </div>
+                                <div class="battery-reliability">
+                                    <span class="reliability-icon">ℹ️</span>
+                                    <span>신뢰도: <span id="battery-reliability">-</span></span>
+                                </div>
+                                <div class="radar-chart-container">
+                                    <h4>항목별 점수 비교</h4>
+                                    <canvas id="radar-chart" width="300" height="300"></canvas>
+                                </div>
+                            </div>
+                            <div class="battery-score-right">
+                                <div class="penalty-section">
+                                    <h4>감점 해체</h4>
+                                    <div class="penalty-list" id="penalty-list">
+                                        <!-- JavaScript로 동적 생성 -->
+                                    </div>
+                                </div>
+                                <div class="percentile-section">
+                                    <h4>백분위 순위</h4>
+                                    <div class="percentile-list" id="percentile-list">
+                                        <!-- JavaScript로 동적 생성 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 차량 상세 분석 모달 -->
+    <div id="vehicle-detail-modal" class="modal">
+        <div class="modal-content vehicle-detail-content">
+            <div class="modal-header">
+                <h2>차량 상세 분석</h2>
+                <button class="modal-close" onclick="closeVehicleDetail()">&times;</button>
+            </div>
+            <div class="modal-body vehicle-detail-body">
+                <!-- 차량 기본 정보 -->
+                <div class="vehicle-basic-info">
+                    <div class="info-row">
+                        <span class="info-label">Row:</span>
+                        <span class="info-value" id="detail-total-rows">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">연식</span>
+                        <span class="info-value" id="detail-age-string">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">수집기간</span>
+                        <span class="info-value" id="detail-collection-period">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">차량 ID:</span>
+                        <span class="info-value" id="detail-car-id">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">차종:</span>
+                        <span class="info-value" id="detail-car-type">-</span>
+                    </div>
+                </div>
+
+                <!-- 구간 수 요약 -->
+                <div class="section-count-summary">
+                    <h3>구간 수 요약 (Section Count Summary)</h3>
+                    <div class="section-count-grid">
+                        <div class="section-count-box">
+                            <div class="section-count-label">주행 구간(Drive)</div>
+                            <div class="section-count-value" id="detail-drive-count">0</div>
+                        </div>
+                        <div class="section-count-box">
+                            <div class="section-count-label">주차 구간(Parking)</div>
+                            <div class="section-count-value" id="detail-parking-count">0</div>
+                        </div>
+                        <div class="section-count-box">
+                            <div class="section-count-label">급속충전(Fast)</div>
+                            <div class="section-count-value" id="detail-fast-charge-count">0</div>
+                        </div>
+                        <div class="section-count-box">
+                            <div class="section-count-label">완속 충전(Slow)</div>
+                            <div class="section-count-value" id="detail-slow-charge-count">0</div>
+                        </div>
+                    </div>
+                    <div class="section-count-message" id="section-count-message" style="display: none;">
+                        주행 구간, 주차 구간, 급속 충전, 완속 충전에 대한 정보가 명시되어 있지 않습니다
+                    </div>
+                </div>
+
+                <!-- 배터리 점수 해설 -->
+                <div class="vehicle-battery-score-detail">
+                    <h3>배터리 점수 해설 (Battery Score Explanation)</h3>
+                    
+                    <!-- 항목별 점수 비교 -->
+                    <div class="score-comparison-section">
+                        <h4>항목별 점수 비교 (Item Score Comparison)</h4>
+                        <div class="score-main-display">
+                            <div class="score-value-large" id="detail-final-score">-</div>
+                            <div class="score-label-large">점</div>
+                        </div>
+                        <div class="radar-chart-container-detail">
+                            <canvas id="detail-radar-chart" width="300" height="300"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 감점 해제 -->
+                    <div class="penalty-breakdown-section">
+                        <h4>감점 해제 (Penalty Breakdown)</h4>
+                        <div class="penalty-list-detail" id="detail-penalty-list">
+                            <!-- JavaScript로 동적 생성 -->
+                        </div>
+                    </div>
+
+                    <!-- 백분위 순위 -->
+                    <div class="percentile-rank-section">
+                        <h4>백분위 순위 (Percentile Rank)</h4>
+                        <div class="percentile-list-detail" id="detail-percentile-list">
+                            <!-- JavaScript로 동적 생성 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 기여도 상세 -->
+                <div class="contribution-details-section">
+                    <h3>기여도 상세 (Contribution Details)</h3>
+                    
+                    <!-- 효율 -->
+                    <div class="contribution-item-detailed">
+                        <div class="contribution-item-header">
+                            <h4>효율(점수 추이)</h4>
+                            <div class="contribution-score-change" id="detail-efficiency-score-change">-</div>
+                        </div>
+                        <div class="contribution-chart-container">
+                            <canvas id="detail-efficiency-chart" width="400" height="120"></canvas>
+                        </div>
+                        <div class="contribution-summary">
+                            <span id="detail-efficiency-summary">-</span>
+                            <button class="detail-btn" onclick="openEfficiencyDetail('${car_id}')">자세히</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 온도 -->
+                    <div class="contribution-item-detailed">
+                        <div class="contribution-item-header">
+                            <h4>온도(점수 추이)</h4>
+                            <div class="contribution-score-change" id="detail-temperature-score-change">-</div>
+                        </div>
+                        <div class="contribution-chart-container">
+                            <canvas id="detail-temperature-chart" width="400" height="120"></canvas>
+                        </div>
+                        <div class="contribution-summary">
+                            <span id="detail-temperature-summary">-</span>
+                            <button class="detail-btn" onclick="openEfficiencyDetail('${car_id}')">자세히</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 셀밸런스 -->
+                    <div class="contribution-item-detailed">
+                        <div class="contribution-item-header">
+                            <h4>셀밸런스(점수 추이)</h4>
+                            <div class="contribution-score-change" id="detail-cell-score-change">-</div>
+                        </div>
+                        <div class="contribution-chart-container">
+                            <canvas id="detail-cell-chart" width="400" height="120"></canvas>
+                        </div>
+                        <div class="contribution-summary">
+                            <span id="detail-cell-summary">-</span>
+                            <button class="detail-btn" onclick="openCellBalanceDetail()">자세히</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 주행 -->
+                    <div class="contribution-item-detailed">
+                        <div class="contribution-item-header">
+                            <h4>주행(활동 추이)</h4>
+                            <div class="contribution-score-change" id="detail-driving-score-change">-</div>
+                        </div>
+                        <div class="contribution-chart-container">
+                            <canvas id="detail-driving-chart" width="400" height="120"></canvas>
+                        </div>
+                        <div class="contribution-summary">
+                            <span id="detail-driving-summary">-</span>
+                            <button class="detail-btn" onclick="openDrivingDetail()">자세히</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 충전 -->
+                    <div class="contribution-item-detailed">
+                        <div class="contribution-item-header">
+                            <h4>충전(활동 추이)</h4>
+                            <div class="contribution-score-change" id="detail-charging-score-change">-</div>
+                        </div>
+                        <div class="contribution-chart-container">
+                            <canvas id="detail-charging-chart" width="400" height="120"></canvas>
+                        </div>
+                        <div class="contribution-summary">
+                            <span id="detail-charging-summary">-</span>
+                            <button class="detail-btn" onclick="openChargingDetail()">자세히</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 연식 패널티 -->
+                    <div class="contribution-item-detailed age-penalty-item">
+                        <div class="contribution-item-header">
+                            <h4>연식 패널티</h4>
+                            <div class="contribution-score-change age-penalty-score" id="detail-age-penalty-score">-</div>
+                        </div>
+                        <div class="age-penalty-content">
+                            <div class="age-penalty-text">가중 평균에서 차감</div>
+                            <div class="age-penalty-info">
+                                <div>차량 연식: <span id="detail-age-info">-</span></div>
+                                <div>수집 시작: <span id="detail-collection-start">-</span></div>
+                                <div>연식에 따른 감점 적용</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 효율 상세 분석 모달 -->
+    <div id="efficiency-detail-modal" class="modal">
+        <div class="modal-content efficiency-detail-content">
+            <div class="modal-header">
+                <h2>효율 상세 분석</h2>
+                <button class="modal-close" onclick="closeEfficiencyDetail()">&times;</button>
+            </div>
+            <div class="modal-body efficiency-detail-body">
+                <div class="efficiency-detail-layout">
+                    <!-- 왼쪽: 기여도 상세 요약 -->
+                    <div class="efficiency-detail-left">
+                        <h3>기여도 상세 (Contribution Details)</h3>
+                        <div id="efficiency-detail-contribution-list">
+                            <!-- JavaScript로 동적 생성 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 오른쪽: 효율 상세 분석 -->
+                    <div class="efficiency-detail-right">
+                        <h3>효율 상세 분석 (Efficiency Detailed Analysis)</h3>
+                        
+                        <!-- 데이터 없음 메시지 -->
+                        <div class="no-data-message" id="efficiency-no-data-message" style="display: none;"></div>
+                        
+                        <!-- 효율(km/kWh) 시계열 -->
+                        <div class="efficiency-chart-section">
+                            <h4>효율(km/kWh) 시계열</h4>
+                            <div class="chart-info">
+                                <span>평균 <span id="efficiency-avg-value">-</span> km/kWh</span>
+                            </div>
+                            <div class="chart-container-large">
+                                <canvas id="efficiency-timeseries-chart" width="600" height="200"></canvas>
+                            </div>
+                            <div class="criterion-info" id="efficiency-criterion-info">-</div>
+                        </div>
+                        
+                        <!-- 주행거리(km) & 전력량(kWh) -->
+                        <div class="efficiency-chart-section">
+                            <h4>주행거리(km) & 전력량(kWh)</h4>
+                            <div class="chart-container-large">
+                                <canvas id="efficiency-bar-chart" width="600" height="200"></canvas>
+                            </div>
+                            <div class="chart-legend-horizontal">
+                                <span class="legend-item-bar"><span class="legend-color" style="background: #4CAF50;"></span>주행거리(km)</span>
+                                <span class="legend-item-bar"><span class="legend-color" style="background: #FFC107;"></span>전력량(kWh)</span>
+                            </div>
+                            <div class="chart-explanation">
+                                각 일별 주행거리(km)를 전력량(kWh)로 나누어 일별 전비(km/kWh)를 계산합니다.
+                            </div>
+                        </div>
+                        
+                        <!-- 전비(km/kWh) → 효율 점수 변환 -->
+                        <div class="efficiency-chart-section">
+                            <h4>전비(km/kWh) → 효율 점수 변환</h4>
+                            <div class="chart-explanation">
+                                차량의 평균 전비(km/kWh)를 기준값과 비교하여 0~100점 사이의 효율 점수로 변환합니다.
+                            </div>
+                            <div class="chart-container-large">
+                                <canvas id="efficiency-conversion-chart" width="600" height="200"></canvas>
+                            </div>
+                            <div class="conversion-legend">
+                                <span id="efficiency-bad-criterion">-</span>
+                                <span id="efficiency-good-criterion">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 점수 계산 결과 -->
+                        <div class="efficiency-result-section">
+                            <h4>점수 계산 결과</h4>
+                            <table class="efficiency-result-table">
+                                <thead>
+                                    <tr>
+                                        <th>평균 전비</th>
+                                        <th>최종 효율 점수</th>
+                                        <th>기여도 점수</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="result-avg-efficiency">-</td>
+                                        <td id="result-efficiency-score">-</td>
+                                        <td id="result-contribution">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="result-explanation" id="result-explanation-text">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 온도 상세 분석 모달 -->
+    <div id="temperature-detail-modal" class="modal">
+        <div class="modal-content efficiency-detail-content">
+            <div class="modal-header">
+                <h2>온도 상세 분석</h2>
+                <button class="modal-close" onclick="closeTemperatureDetail()">&times;</button>
+            </div>
+            <div class="modal-body efficiency-detail-body">
+                <div class="efficiency-detail-layout">
+                    <!-- 왼쪽: 기여도 상세 요약 -->
+                    <div class="efficiency-detail-left">
+                        <h3>기여도 상세 (Contribution Details)</h3>
+                        <div id="temperature-detail-contribution-list">
+                            <!-- JavaScript로 동적 생성 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 오른쪽: 온도 상세 분석 -->
+                    <div class="efficiency-detail-right">
+                        <h3>온도 상세 분석 (Temperature Detailed Analysis)</h3>
+                        
+                        <!-- 데이터 없음 메시지 -->
+                        <div class="no-data-message" id="temperature-no-data-message" style="display: none;"></div>
+                        
+                        <!-- 온도(℃) 시계열 -->
+                        <div class="efficiency-chart-section">
+                            <h4>온도(℃) 시계열</h4>
+                            <div class="chart-info">
+                                <span>평균 온도: <span id="temperature-avg-value">-</span>℃</span>
+                            </div>
+                            <div class="chart-container-large">
+                                <canvas id="temperature-timeseries-chart" width="600" height="200"></canvas>
+                            </div>
+                            <div class="criterion-info" id="temperature-criterion-info">-</div>
+                        </div>
+                        
+                        <!-- 온도 → 점수 변환 -->
+                        <div class="efficiency-chart-section">
+                            <h4>온도 → 점수 변환</h4>
+                            <div class="chart-explanation">
+                                차량의 평균 온도를 기준값과 비교하여 0~100점 사이의 온도 점수로 변환합니다.
+                            </div>
+                            <div class="chart-container-large">
+                                <canvas id="temperature-conversion-chart" width="600" height="200"></canvas>
+                            </div>
+                            <div class="conversion-legend">
+                                <span id="temperature-optimal-criterion">-</span>
+                                <span id="temperature-current-value">-</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 점수 계산 결과 -->
+                        <div class="efficiency-result-section">
+                            <h4>점수 계산 결과</h4>
+                            <table class="efficiency-result-table">
+                                <thead>
+                                    <tr>
+                                        <th>평균 온도</th>
+                                        <th>최종 온도 점수</th>
+                                        <th>기여도 점수</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="result-avg-temperature">-</td>
+                                        <td id="result-temperature-score">-</td>
+                                        <td id="result-temperature-contribution">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="result-explanation" id="result-temperature-explanation-text">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 셀 밸런스 상세 분석 모달 -->
+    <div id="cell-balance-detail-modal" class="modal">
+        <div class="modal-content efficiency-detail-content">
+            <div class="modal-header">
+                <h2>셀 밸런스 상세 분석</h2>
+                <button class="modal-close" onclick="closeCellBalanceDetail()">&times;</button>
+            </div>
+            <div class="modal-body efficiency-detail-body">
+                <div class="efficiency-detail-layout">
+                    <!-- 왼쪽: 기여도 상세 요약 -->
+                    <div class="efficiency-detail-left">
+                        <h3>기여도 상세 (Contribution Details)</h3>
+                        <div id="cell-balance-detail-contribution-list">
+                            <!-- JavaScript로 동적 생성 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 오른쪽: 셀 밸런스 상세 분석 -->
+                    <div class="efficiency-detail-right">
+                        <h3>셀 밸런스 상세 분석 (Cell Balance Detailed Analysis)</h3>
+                        
+                        <!-- 데이터 없음 메시지 -->
+                        <div class="no-data-message" id="cell-balance-no-data-message" style="display: none;"></div>
+                        
+                        <!-- 전압 요약 차트 (4개) -->
+                        <div class="efficiency-chart-section">
+                            <h4>전압 요약</h4>
+                            <div class="voltage-summary-grid">
+                                <div class="voltage-summary-item">
+                                    <h5>최소 전압</h5>
+                                    <div class="chart-container-small">
+                                        <canvas id="cell-min-voltage-chart" width="200" height="100"></canvas>
+                                    </div>
+                                </div>
+                                <div class="voltage-summary-item">
+                                    <h5>최대 전압</h5>
+                                    <div class="chart-container-small">
+                                        <canvas id="cell-max-voltage-chart" width="200" height="100"></canvas>
+                                    </div>
+                                </div>
+                                <div class="voltage-summary-item">
+                                    <h5>중간 전압</h5>
+                                    <div class="chart-container-small">
+                                        <canvas id="cell-mid-voltage-chart" width="200" height="100"></canvas>
+                                    </div>
+                                </div>
+                                <div class="voltage-summary-item">
+                                    <h5>평균 전압</h5>
+                                    <div class="chart-container-small">
+                                        <canvas id="cell-avg-voltage-chart" width="200" height="100"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 셀 전압 라인 -->
+                        <div class="efficiency-chart-section">
+                            <h4>셀 전압 라인(기간 선택, 최대 100개)</h4>
+                            <div class="chart-controls">
+                                <label>
+                                    <input type="checkbox" id="cell-deviation-emphasis"> 편차 강조(평균 기준)
+                                </label>
+                                <label>
+                                    강조 임계치: <input type="range" id="cell-threshold-slider" min="0" max="100" value="32" step="1">
+                                    <span id="cell-threshold-value">32</span> mV
+                                </label>
+                            </div>
+                            <div class="chart-container-large">
+                                <canvas id="cell-voltage-line-chart" width="600" height="200"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- 셀 평균 전압 편차 -->
+                        <div class="efficiency-chart-section">
+                            <h4>셀 평균 전압 편차(mV) - 기준: 평균</h4>
+                            <div class="chart-container-large">
+                                <canvas id="cell-avg-deviation-chart" width="600" height="200"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- 셀 전압 표준편차 & 범위 -->
+                        <div class="efficiency-chart-section">
+                            <div class="cell-charts-row">
+                                <div class="cell-chart-half">
+                                    <h4>셀 전압 표준편차(mV)</h4>
+                                    <div class="chart-controls-small">
+                                        <label><input type="checkbox"> 상대</label>
+                                        <label><input type="checkbox"> 내림차순 상위</label>
+                                        <input type="range" min="0" max="50" value="24" step="1">
+                                    </div>
+                                    <div class="chart-container-medium">
+                                        <canvas id="cell-std-deviation-chart" width="300" height="150"></canvas>
+                                    </div>
+                                </div>
+                                <div class="cell-chart-half">
+                                    <h4>셀 전압 범위(max-min, mV)</h4>
+                                    <div class="chart-controls-small">
+                                        <label><input type="checkbox"> 상대</label>
+                                        <label><input type="checkbox"> 내림차순 상위</label>
+                                        <input type="range" min="0" max="50" value="24" step="1">
+                                    </div>
+                                    <div class="chart-container-medium">
+                                        <canvas id="cell-range-chart" width="300" height="150"></canvas>
+                                    </div>
+                                    <div class="cell-top-deviation">
+                                        상위 편차 셀: <span id="cell-top-deviation-list">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 점수 계산 결과 -->
+                        <div class="efficiency-result-section">
+                            <h4>점수 계산 결과</h4>
+                            <table class="efficiency-result-table">
+                                <thead>
+                                    <tr>
+                                        <th>평균 셀 편차</th>
+                                        <th>최종 셀 점수</th>
+                                        <th>기여도 점수</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="result-avg-cell-deviation">-</td>
+                                        <td id="result-cell-score">-</td>
+                                        <td id="result-cell-contribution">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="result-explanation" id="result-cell-explanation-text">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 점수 기준 모달 -->
+    <div id="score-criteria-modal" class="modal">
+        <div class="modal-content score-criteria-content">
+            <div class="modal-header">
+                <h2>Battery Score Criteria</h2>
+                <button class="modal-close" onclick="closeScoreCriteria()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 등급 기준 -->
+                <div class="criteria-section">
+                    <h3>등급 기준</h3>
+                    <table class="criteria-table">
+                        <thead>
+                            <tr>
+                                <th>등급</th>
+                                <th>점수 범위</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>매우 좋음</strong></td>
+                                <td>Score ≥ 85</td>
+                            </tr>
+                            <tr>
+                                <td><strong>좋음</strong></td>
+                                <td>70 ≤ Score < 85</td>
+                            </tr>
+                            <tr>
+                                <td><strong>보통</strong></td>
+                                <td>55 ≤ Score < 70</td>
+                            </tr>
+                            <tr>
+                                <td><strong>나쁨</strong></td>
+                                <td>Score < 55</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 세부 계산식 -->
+                <div class="criteria-section">
+                    <h3>세부 계산식(요약)</h3>
+                    <div class="criteria-note">
+                        <p><strong>모든 점수는 0~100 범위로 정규화되며, 하한값 40, 상한값 100으로 클리핑됩니다.</strong></p>
+                    </div>
+                    
+                    <table class="criteria-table">
+                        <thead>
+                            <tr>
+                                <th>항목</th>
+                                <th>계산식/정규화</th>
+                                <th>가중치</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>효율 (km/kWh)</strong></td>
+                                <td>
+                                    차종/연식별 기준값 적용<br>
+                                    (상용차 2.5~6.5, 소형 4.0~8.5, 중형 3.5~7.5, 대형 3.0~7.0, 프리미엄 3.8~8.0)<br>
+                                    연식이 오래될수록 기준값 완화 (최대 -0.8)<br>
+                                    선형 보간으로 40~100점 매김
+                                </td>
+                                <td><strong>0.30</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>평균 온도 (°C)</strong></td>
+                                <td>
+                                    Score = 100 - 2 × (T - 30)<br>
+                                    결과를 [40, 100] 범위로 클리핑
+                                </td>
+                                <td><strong>0.15</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>셀 편차(V)</strong></td>
+                                <td>
+                                    norm = (diff - 0.02) / 0.004<br>
+                                    Score = 100 / (1 + e^(norm))<br>
+                                    결과를 [40, 100] 범위로 클리핑
+                                </td>
+                                <td><strong>0.15</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>주행 습관</strong></td>
+                                <td>
+                                    주행 패턴 기반 평가 (기본 점수 80점)<br>
+                                    일평균 주행거리 평가 (20~100km 적정), 주행 패턴 일관성, 총 누적거리 평가 (7300km 이상 우수)<br>
+                                    가속/제동 데이터 있으면 100 - 20 × (가속 표준편차 + 제동 표준편차) 우선 적용<br>
+                                    결과를 [40, 100] 범위로 클리핑
+                                </td>
+                                <td><strong>0.15</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong>충전 패턴</strong></td>
+                                <td>
+                                    고 SOC 시작 비율 및 충전 빈도 기반 점수<br>
+                                    (고속 충전 비율은 사용하지 않음)<br>
+                                    값이 없으면 80점
+                                </td>
+                                <td><strong>0.15</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 추가 규칙 -->
+                <div class="criteria-section">
+                    <h3>추가 규칙 및 참고사항</h3>
+                    <ul class="criteria-list">
+                        <li>모든 개별 항목 점수는 0~100 범위로 정규화되며, 하한값 40, 상한값 100으로 클리핑됩니다.</li>
+                        <li>가중 합계는 사용 가능한 항목에 대해서만 계산되며, 가중치 합계(0.90)로 나누어 정규화됩니다.</li>
+                        <li><strong>연식 계산:</strong> 연식은 호출한 시점에서 Model Year와 Model Month를 고려하여 계산합니다.
+                            <ul>
+                                <li>연식 = (현재 연도 - Model Year) + (현재 월 - Model Month) / 12</li>
+                                <li>예시: 현재가 2024년 12월이고, Model Year가 2022년, Model Month가 3월이면 연식 = (2024 - 2022) + (12 - 3) / 12 = 2.75년</li>
+                            </ul>
+                        </li>
+                        <li><strong>연식 패널티:</strong> 계산된 연식에 따른 비선형 감점 적용
+                            <ul>
+                                <li>1년차: 연식 × 1.5</li>
+                                <li>1~3년: 1.5 + (연식 - 1) × 1.2</li>
+                                <li>3~5년: 3.9 + (연식 - 3) × 0.8</li>
+                                <li>5년 이후: 5.5 + (연식 - 5) × 0.4</li>
+                                <li>최대 감점: 7.5점</li>
+                            </ul>
+                        </li>
+                        <li><strong>최종 점수:</strong> 가중 합계에서 연식 패널티를 뺀 값이며, 결과를 0~98 범위로 클리핑합니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
+

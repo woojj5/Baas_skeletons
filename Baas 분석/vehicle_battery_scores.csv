@@ -1,0 +1,2 @@
+﻿car_id,car_type,vehicle_type,age_years,model_year,model_month,age_string,first_date,last_date,collection_period,efficiency,efficiency_score,avg_temperature,temperature_score,cell_imbalance,cell_imbalance_score,driving_habit_score,charging_count,avg_charging_amount,charging_pattern_score,weighted_avg,age_penalty,final_score
+V000CA0024,CASPER_LONGRANGE,중형,1.33,2024.0,8.0,2024.08,2025-03-25T15:00:02+00:00,2025-07-07T03:15:26+00:00,2025.03.25 ~ 2025.07.07,9.9,100.0,19.75,100.0,0.0072,96.06,93.62,28.0,37.7,86.99,96.11,1.9,94.21

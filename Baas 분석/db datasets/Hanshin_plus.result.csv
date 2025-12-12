@@ -1,0 +1,2 @@
+﻿car_id,car_type,vehicle_type,age_years,model_year,model_month,age_string,first_date,last_date,collection_period,efficiency,efficiency_score,avg_temperature,temperature_score,cell_imbalance,cell_imbalance_score,driving_habit_score,charging_count,avg_charging_amount,charging_pattern_score,weighted_avg,age_penalty,final_score
+M2210704056,Hanshin_plus,소형,4.92,2021.0,1.0,2021.01,2021-11-17T20:44:46+00:00,2021-11-29T15:18:10+00:00,2021.11.17 ~ 2021.11.29,5.0,62.7,18.06,100.0,0.0067,96.56,72.45,,,80.0,79.07,5.4,73.67

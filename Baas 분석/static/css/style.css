@@ -1,0 +1,1891 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 헤더 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+}
+
+.header h1 {
+    font-size: 28px;
+    color: #2c3e50;
+}
+
+.last-update {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    color: #666;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.refresh-btn:hover {
+    color: #2c3e50;
+    transform: rotate(180deg);
+}
+
+/* 통계 섹션 */
+.stats-section {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stats-section h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.stat-card:nth-child(2) {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.stat-card:nth-child(3) {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.stat-card:nth-child(4) {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+/* 네비게이션 */
+.nav-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.nav-tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-tab {
+    padding: 10px 20px;
+    border: none;
+    background: white;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+}
+
+.nav-tab:hover {
+    background: #f0f0f0;
+}
+
+.nav-tab.active {
+    color: #2c3e50;
+    border-bottom-color: #667eea;
+    font-weight: 600;
+}
+
+.nav-right {
+    color: #666;
+    font-size: 14px;
+}
+
+.llm-status {
+    background: #fff3cd;
+    padding: 8px 15px;
+    border-radius: 20px;
+    color: #856404;
+}
+
+/* 콘텐츠 영역 */
+.content-wrapper {
+    /* 기본 레이아웃 - 분석 탭에서는 전체 너비 사용 */
+}
+
+.overview-content-wrapper {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 20px;
+}
+
+.overview-main {
+    /* 오른쪽 콘텐츠 영역 */
+}
+
+/* 사이드바 */
+.sidebar {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: fit-content;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.field-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.sidebar h3 {
+    font-size: 18px;
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.field-list-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.field-control-btn {
+    padding: 5px 10px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.field-control-btn:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+.field-info-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.collection-period-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background: #e3f2fd;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #1976d2;
+    cursor: pointer;
+}
+
+.collection-period-value {
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.field-count-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.field-count-info .field-label {
+    font-size: 14px;
+    color: #666;
+}
+
+.field-count-info .field-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    background: white;
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+
+.field-categories {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.field-category-panel {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.field-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.field-category-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.field-category-count {
+    font-size: 12px;
+    color: #666;
+    background: #f8f9fa;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.field-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.field-item:hover {
+    background: #f8f9fa;
+}
+
+.field-icon {
+    width: 12px;
+    height: 12px;
+    background: #4facfe;
+    transform: rotate(45deg);
+    flex-shrink: 0;
+}
+
+.field-name {
+    font-size: 12px;
+    color: #2c3e50;
+    font-family: 'Courier New', monospace;
+}
+
+/* 메인 콘텐츠 */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* 차종 수 현황 */
+.vehicle-types-section {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.vehicle-types-section h3 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.vehicle-types-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.vehicle-type-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.vehicle-type-item:hover {
+    background: #f8f9fa;
+}
+
+.vehicle-type-item:last-child {
+    border-bottom: none;
+}
+
+.vehicle-type-name {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.vehicle-type-count {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.vehicle-type-number {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.vehicle-type-percentage {
+    font-size: 14px;
+    color: #666;
+    min-width: 50px;
+    text-align: right;
+}
+
+/* 최근 파일 섹션 */
+.recent-files-section {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.recent-files-section h3 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.recent-files-content {
+    display: block;
+}
+
+.files-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.files-list-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-item {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+}
+
+.file-name {
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-size: 14px;
+    word-break: break-all;
+}
+
+.file-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+}
+
+/* 완성도 차트 */
+.completeness-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.completeness-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.completeness-label {
+    font-size: 14px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.completeness-bar {
+    height: 30px;
+    background: #e9ecef;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+.completeness-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.5s ease;
+    border-radius: 15px;
+}
+
+.completeness-item:nth-child(2) .completeness-fill {
+    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.completeness-item:nth-child(3) .completeness-fill {
+    background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+}
+
+.completeness-value {
+    font-size: 14px;
+    color: #666;
+    text-align: right;
+}
+
+/* 분석 탭 */
+.analysis-placeholder {
+    background: white;
+    border-radius: 8px;
+    padding: 100px;
+    text-align: center;
+    color: #666;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 로딩 */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+/* 스크롤바 스타일 */
+.vehicle-types-list::-webkit-scrollbar,
+.files-list::-webkit-scrollbar,
+.table-container::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.vehicle-types-list::-webkit-scrollbar-track,
+.files-list::-webkit-scrollbar-track,
+.table-container::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.vehicle-types-list::-webkit-scrollbar-thumb,
+.files-list::-webkit-scrollbar-thumb,
+.table-container::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.vehicle-types-list::-webkit-scrollbar-thumb:hover,
+.files-list::-webkit-scrollbar-thumb:hover,
+.table-container::-webkit-scrollbar-thumb:hover,
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* 배터리 점수 해설 */
+.battery-score-section {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+.battery-score-section h3 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.battery-score-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.battery-score-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.battery-score-main {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.battery-score-value {
+    font-size: 48px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.battery-score-label {
+    font-size: 24px;
+    color: #666;
+}
+
+.battery-reliability {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+.reliability-icon {
+    font-size: 16px;
+}
+
+.radar-chart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.radar-chart-container h4 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin: 0;
+}
+
+#radar-chart {
+    max-width: 100%;
+    height: auto;
+}
+
+.battery-score-right {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.penalty-section h4,
+.percentile-section h4 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.penalty-list,
+.percentile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.penalty-item,
+.percentile-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.penalty-label,
+.percentile-label {
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.penalty-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #dc3545;
+}
+
+.percentile-bar-container {
+    flex: 1;
+    margin: 0 15px;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.percentile-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.percentile-bar.orange {
+    background: linear-gradient(90deg, #ff9800 0%, #ff5722 100%);
+}
+
+.percentile-value {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.percentile-score {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.percentile-pct {
+    font-size: 12px;
+    color: #666;
+}
+
+/* 차량별 배터리 성능 섹션 */
+.vehicle-battery-performance-section {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.performance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.performance-header h2 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0 0 5px 0;
+}
+
+.performance-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.performance-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.period-filter,
+.period-filter-small {
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.view-btn {
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-btn:hover {
+    background: #f8f9fa;
+}
+
+.view-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.performance-summary {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.summary-box {
+    flex: 1;
+    min-width: 120px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.summary-box.clickable {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.summary-box.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.summary-box.clickable.active {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transform: translateY(-2px);
+}
+
+.summary-box.excellent {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+}
+
+.summary-box.good {
+    background: #d1ecf1;
+    border: 2px solid #17a2b8;
+}
+
+.summary-box.normal {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+}
+
+.summary-box.bad {
+    background: #f8d7da;
+    border: 2px solid #dc3545;
+}
+
+.summary-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.summary-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.performance-content {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+}
+
+.performance-main {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.table-filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.car-type-filter,
+.period-filter-small {
+    padding: 6px 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 13px;
+    background: white;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 6px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.view-content {
+    display: none;
+}
+
+.view-content.active {
+    display: block;
+}
+
+.table-container {
+    overflow-x: auto;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.vehicle-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.vehicle-table thead {
+    background: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.vehicle-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.vehicle-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.vehicle-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.score-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.score-badge.excellent {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.score-badge.good {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.score-badge.normal {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.score-badge.bad {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.performance-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.distribution-chart {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.distribution-chart h3 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin: 0 0 15px 0;
+}
+
+.distribution-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: white;
+    border-radius: 4px;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.stat-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.donut-chart-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.chart-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #2c3e50;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.chart-container h3 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin: 0 0 15px 0;
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+    .overview-content-wrapper {
+        grid-template-columns: 1fr;
+    }
+    
+    .field-categories {
+        grid-template-columns: 1fr;
+    }
+    
+    .recent-files-header,
+    .recent-files-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .battery-score-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .performance-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .performance-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+/* 점수 기준 모달 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    overflow: auto;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    margin: auto;
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.score-criteria-content {
+    max-width: 1000px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 2px solid #e0e0e0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 32px;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.criteria-section {
+    margin-bottom: 30px;
+}
+
+.criteria-section h3 {
+    font-size: 20px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.criteria-note {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #667eea;
+}
+
+.criteria-note p {
+    margin: 0;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+.criteria-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.criteria-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.criteria-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.criteria-table td {
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 13px;
+    line-height: 1.6;
+    vertical-align: top;
+}
+
+.criteria-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.criteria-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.criteria-table td strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.criteria-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.criteria-list > li {
+    padding: 12px 0;
+    border-bottom: 1px solid #e0e0e0;
+    line-height: 1.8;
+    color: #2c3e50;
+}
+
+.criteria-list > li:last-child {
+    border-bottom: none;
+}
+
+.criteria-list > li > ul {
+    margin-top: 10px;
+    margin-left: 20px;
+    list-style: disc;
+}
+
+.criteria-list > li > ul > li {
+    padding: 5px 0;
+    color: #666;
+}
+
+/* 차량 상세 분석 모달 */
+.vehicle-detail-content {
+    max-width: 1200px;
+    width: 95%;
+}
+
+.vehicle-detail-body {
+    padding: 25px;
+}
+
+.vehicle-basic-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.info-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.info-value {
+    color: #2c3e50;
+}
+
+.section-count-summary {
+    margin-bottom: 30px;
+}
+
+.section-count-summary h3 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.section-count-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.section-count-box {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+    text-align: center;
+}
+
+.section-count-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.section-count-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.section-count-message {
+    margin-top: 15px;
+    padding: 12px;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    color: #856404;
+    font-size: 13px;
+    text-align: center;
+}
+
+.vehicle-battery-score-detail {
+    margin-bottom: 30px;
+}
+
+.vehicle-battery-score-detail h3 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.score-comparison-section {
+    margin-bottom: 25px;
+}
+
+.score-comparison-section h4 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.score-main-display {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-bottom: 20px;
+}
+
+.score-value-large {
+    font-size: 48px;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.score-label-large {
+    font-size: 24px;
+    color: #666;
+}
+
+.radar-chart-container-detail {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.penalty-breakdown-section,
+.percentile-rank-section {
+    margin-bottom: 25px;
+}
+
+.penalty-breakdown-section h4,
+.percentile-rank-section h4 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.penalty-list-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.penalty-item-detail {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.penalty-label-detail {
+    color: #2c3e50;
+}
+
+.penalty-value-detail {
+    font-weight: 600;
+    color: #dc3545;
+}
+
+.percentile-list-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.percentile-item-detail {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.percentile-label-detail {
+    min-width: 80px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.percentile-bar-container-detail {
+    flex: 1;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.percentile-bar-detail {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s;
+}
+
+.percentile-bar-detail.orange {
+    background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+}
+
+.percentile-value-detail {
+    display: flex;
+    gap: 8px;
+    min-width: 120px;
+    justify-content: flex-end;
+}
+
+.percentile-score-detail {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.percentile-pct-detail {
+    color: #666;
+}
+
+.contribution-details-section {
+    margin-bottom: 30px;
+}
+
+.contribution-details-section h3 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.contribution-item-detailed {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.contribution-item-detailed.age-penalty-item {
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+}
+
+.contribution-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.contribution-item-header h4 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.contribution-score-change {
+    font-size: 16px;
+    font-weight: 600;
+    color: #666;
+}
+
+.contribution-score-change.age-penalty-score {
+    font-size: 18px;
+    color: #dc3545;
+}
+
+.contribution-chart-container {
+    margin: 15px 0;
+    height: 120px;
+    background: #fafafa;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.contribution-chart-container canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.contribution-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.contribution-summary span {
+    font-size: 13px;
+    color: #666;
+    flex: 1;
+}
+
+.detail-btn {
+    padding: 5px 15px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+    margin-left: 10px;
+}
+
+.detail-btn:hover {
+    background: #5568d3;
+}
+
+.age-penalty-content {
+    margin-top: 15px;
+}
+
+.age-penalty-text {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.age-penalty-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    color: #666;
+    font-size: 14px;
+}
+
+.vehicle-row:hover {
+    background-color: #f0f0f0;
+}
+
+/* 효율 상세 분석 모달 */
+.efficiency-detail-content {
+    max-width: 1400px;
+    width: 95%;
+}
+
+.efficiency-detail-body {
+    padding: 25px;
+}
+
+.efficiency-detail-layout {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 30px;
+}
+
+.efficiency-detail-left h3,
+.efficiency-detail-right h3 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.efficiency-chart-section {
+    margin-bottom: 30px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+.efficiency-chart-section h4 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.chart-info {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.chart-container-large {
+    margin: 15px 0;
+    height: 200px;
+    background: #fafafa;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.chart-container-large canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.criterion-info {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+.chart-legend-horizontal {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+    justify-content: center;
+}
+
+.legend-item-bar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+.chart-explanation {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+.conversion-legend {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+.efficiency-result-section {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 20px;
+    border-left: 4px solid #667eea;
+}
+
+.efficiency-result-section h4 {
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.efficiency-result-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    background: white;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.efficiency-result-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.efficiency-result-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.efficiency-result-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.efficiency-result-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.result-explanation {
+    margin-top: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* 셀 밸런스 상세 분석 스타일 */
+.voltage-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.voltage-summary-item {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.voltage-summary-item h5 {
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.chart-container-small {
+    height: 100px;
+    background: white;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.chart-container-small canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.chart-controls label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.chart-controls input[type="checkbox"] {
+    margin: 0;
+}
+
+.chart-controls input[type="range"] {
+    width: 100px;
+}
+
+.chart-container-medium {
+    height: 150px;
+    background: #fafafa;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.chart-container-medium canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.cell-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.cell-chart-half {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.cell-chart-half h4 {
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.chart-controls-small {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 11px;
+}
+
+.chart-controls-small label {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.chart-controls-small input[type="checkbox"] {
+    margin: 0;
+}
+
+.chart-controls-small input[type="range"] {
+    width: 80px;
+}
+
+.cell-top-deviation {
+    font-size: 12px;
+    color: #666;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* 데이터 없음 메시지 */
+.no-data-message {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 6px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+    color: #856404;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+@media (max-width: 1200px) {
+    .efficiency-detail-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .cell-charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .section-count-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .contribution-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .contribution-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .criteria-table {
+        font-size: 12px;
+    }
+    
+    .criteria-table th,
+    .criteria-table td {
+        padding: 10px;
+    }
+}
+
