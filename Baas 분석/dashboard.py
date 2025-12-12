@@ -14,7 +14,7 @@ from collections import Counter, defaultdict
 HERE = Path(__file__).resolve().parent
 CFG = HERE / "config2.ini"
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=str(HERE / "templates"), static_folder=str(HERE / "static"))
 
 def _load_cfg():
     cfg = configparser.ConfigParser()
