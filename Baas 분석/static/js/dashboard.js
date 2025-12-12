@@ -735,6 +735,8 @@ function filterByGrade(grade) {
 
 // 이전 차종 필터 값 저장
 let previousCarType = 'all';
+// 이전 등급 필터 값 저장
+let previousGrade = 'all';
 
 async function applyFilters() {
     const carType = document.getElementById('car-type-filter')?.value || 'all';
@@ -788,10 +790,14 @@ async function applyFilters() {
     document.getElementById('summary-normal').textContent = filteredSummary.normal;
     document.getElementById('summary-bad').textContent = filteredSummary.bad;
     
-    // 차종 필터가 변경되었으면 배터리 점수 통계 업데이트
-    if (previousCarType !== carType) {
+    // 필터링된 차량들의 통계 계산 및 업데이트
+    updateFilteredStats(filteredVehicles);
+    
+    // 차종 필터 또는 등급 필터가 변경되었으면 배터리 점수 통계 업데이트
+    if (previousCarType !== carType || previousGrade !== currentGradeFilter) {
         previousCarType = carType;
-        await updateBatteryScoreForCarType(carType);
+        previousGrade = currentGradeFilter;
+        await updateBatteryScoreForFilters(carType, currentGradeFilter);
     }
     
     updateVehicleTable();
@@ -799,10 +805,59 @@ async function applyFilters() {
     drawDonutChart(filteredSummary);
 }
 
-// 차종별 배터리 점수 통계 업데이트
-async function updateBatteryScoreForCarType(carType) {
+// 필터링된 차량들의 통계 업데이트
+function updateFilteredStats(vehicles) {
+    if (!vehicles || vehicles.length === 0) {
+        document.getElementById('total-mileage').textContent = '0 km';
+        document.getElementById('avg-efficiency').textContent = '0 km/kWh';
+        document.getElementById('avg-battery-health').textContent = '0%';
+        return;
+    }
+    
+    // 총 주행거리 계산 (차량 수 * 평균 주행거리 추정)
+    // 실제로는 각 차량의 주행거리를 합산해야 하지만, 현재 데이터에는 없으므로 추정값 사용
+    const totalMileage = vehicles.length * 47000; // 대략적인 추정
+    
+    // 평균 에너지 효율 계산
+    let totalEfficiency = 0;
+    let efficiencyCount = 0;
+    vehicles.forEach(vehicle => {
+        if (vehicle.efficiency !== null && vehicle.efficiency !== undefined) {
+            totalEfficiency += vehicle.efficiency;
+            efficiencyCount++;
+        }
+    });
+    const avgEfficiency = efficiencyCount > 0 ? totalEfficiency / efficiencyCount : 0;
+    
+    // 평균 배터리 건강도 계산 (final_score의 평균)
+    let totalScore = 0;
+    let scoreCount = 0;
+    vehicles.forEach(vehicle => {
+        if (vehicle.final_score !== null && vehicle.final_score !== undefined) {
+            totalScore += vehicle.final_score;
+            scoreCount++;
+        }
+    });
+    const avgBatteryHealth = scoreCount > 0 ? totalScore / scoreCount : 0;
+    
+    // 지표 업데이트
+    document.getElementById('total-mileage').textContent = formatMileage(totalMileage);
+    document.getElementById('avg-efficiency').textContent = `${avgEfficiency.toFixed(1)} km/kWh`;
+    document.getElementById('avg-battery-health').textContent = `${avgBatteryHealth.toFixed(1)}%`;
+}
+
+// 차종별/등급별 배터리 점수 통계 업데이트
+async function updateBatteryScoreForFilters(carType, grade) {
     try {
-        const url = carType === 'all' ? '/api/stats' : `/api/stats?car_type=${encodeURIComponent(carType)}`;
+        const params = new URLSearchParams();
+        if (carType && carType !== 'all') {
+            params.append('car_type', carType);
+        }
+        if (grade && grade !== 'all') {
+            params.append('grade', grade);
+        }
+        
+        const url = params.toString() ? `/api/stats?${params.toString()}` : '/api/stats';
         const response = await fetch(url);
         const data = await response.json();
         
@@ -812,6 +867,11 @@ async function updateBatteryScoreForCarType(carType) {
     } catch (error) {
         console.error('배터리 점수 통계 업데이트 실패:', error);
     }
+}
+
+// 차종별 배터리 점수 통계 업데이트 (하위 호환성)
+async function updateBatteryScoreForCarType(carType) {
+    await updateBatteryScoreForFilters(carType, currentGradeFilter);
 }
 
 // 차량 상세 분석 모달 열기

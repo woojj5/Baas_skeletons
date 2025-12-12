@@ -431,11 +431,12 @@ def get_vehicle_performance_data():
         }
     }
 
-def get_battery_score_stats(car_type=None):
+def get_battery_score_stats(car_type=None, grade=None):
     """배터리 점수 통계 - 캐시된 CSV 데이터 사용
     
     Args:
         car_type: 차종 필터 (None이면 전체 차종)
+        grade: 등급 필터 (None이면 전체, 'excellent', 'good', 'normal', 'bad')
     """
     all_rows = _read_all_csv_data()
     
@@ -445,6 +446,36 @@ def get_battery_score_stats(car_type=None):
     # 차종 필터링
     if car_type and car_type != 'all':
         all_rows = [row for row in all_rows if row.get("car_type", "").strip() == car_type]
+    
+    # 등급 필터링
+    if grade and grade != 'all':
+        grade_mapping = {
+            'excellent': (85, 100),  # 매우 좋음: Score ≥ 85
+            'good': (70, 85),        # 좋음: 70 ≤ Score < 85
+            'normal': (55, 70),      # 보통: 55 ≤ Score < 70
+            'bad': (0, 55)           # 나쁨: Score < 55
+        }
+        
+        if grade in grade_mapping:
+            min_score, max_score = grade_mapping[grade]
+            filtered_rows = []
+            for row in all_rows:
+                try:
+                    final_score = row.get("final_score", "").strip()
+                    if final_score:
+                        score = float(final_score)
+                        if grade == 'excellent':
+                            if score >= min_score:
+                                filtered_rows.append(row)
+                        elif grade == 'bad':
+                            if score < max_score:
+                                filtered_rows.append(row)
+                        else:
+                            if min_score <= score < max_score:
+                                filtered_rows.append(row)
+                except:
+                    pass
+            all_rows = filtered_rows
     
     if not all_rows:
         return None
@@ -607,15 +638,17 @@ def api_stats():
     
     # 차종 필터 파라미터 받기 (옵션)
     car_type = request.args.get('car_type', None)
+    # 등급 필터 파라미터 받기 (옵션)
+    grade = request.args.get('grade', None)
     
     # 캐싱된 데이터 사용
     influx_stats = get_influxdb_stats()
     vehicle_stats = _get_csv_data('vehicle_types', get_vehicle_type_stats)
     completeness = _get_csv_data('completeness', get_data_completeness)
     
-    # 차종별 배터리 점수는 캐시 키에 차종 포함
-    cache_key = f'battery_score_{car_type or "all"}'
-    battery_score = _get_csv_data(cache_key, lambda: get_battery_score_stats(car_type))
+    # 차종별/등급별 배터리 점수는 캐시 키에 차종과 등급 포함
+    cache_key = f'battery_score_{car_type or "all"}_{grade or "all"}'
+    battery_score = _get_csv_data(cache_key, lambda: get_battery_score_stats(car_type, grade))
     
     # DB 개수 고정값
     csv_count = 3
