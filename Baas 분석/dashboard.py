@@ -431,9 +431,20 @@ def get_vehicle_performance_data():
         }
     }
 
-def get_battery_score_stats():
-    """배터리 점수 통계 - 캐시된 CSV 데이터 사용"""
+def get_battery_score_stats(car_type=None):
+    """배터리 점수 통계 - 캐시된 CSV 데이터 사용
+    
+    Args:
+        car_type: 차종 필터 (None이면 전체 차종)
+    """
     all_rows = _read_all_csv_data()
+    
+    if not all_rows:
+        return None
+    
+    # 차종 필터링
+    if car_type and car_type != 'all':
+        all_rows = [row for row in all_rows if row.get("car_type", "").strip() == car_type]
     
     if not all_rows:
         return None
@@ -587,17 +598,24 @@ def _get_csv_data(cache_key, func, *args, **kwargs):
 @app.route('/api/stats')
 def api_stats():
     """통계 데이터 API"""
+    from flask import request
     # 차종 데이터 저장은 하루에 한 번만 (파일 존재 확인)
     today = datetime.now().strftime('%Y%m%d')
     output_file = HERE / "car_types" / f"betterwhy_cartype_list_{today}.csv"
     if not output_file.exists():
         save_car_types_to_csv()
     
+    # 차종 필터 파라미터 받기 (옵션)
+    car_type = request.args.get('car_type', None)
+    
     # 캐싱된 데이터 사용
     influx_stats = get_influxdb_stats()
     vehicle_stats = _get_csv_data('vehicle_types', get_vehicle_type_stats)
     completeness = _get_csv_data('completeness', get_data_completeness)
-    battery_score = _get_csv_data('battery_score', get_battery_score_stats)
+    
+    # 차종별 배터리 점수는 캐시 키에 차종 포함
+    cache_key = f'battery_score_{car_type or "all"}'
+    battery_score = _get_csv_data(cache_key, lambda: get_battery_score_stats(car_type))
     
     # DB 개수 고정값
     csv_count = 3

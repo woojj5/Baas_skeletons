@@ -733,7 +733,10 @@ function filterByGrade(grade) {
     applyFilters();
 }
 
-function applyFilters() {
+// 이전 차종 필터 값 저장
+let previousCarType = 'all';
+
+async function applyFilters() {
     const carType = document.getElementById('car-type-filter')?.value || 'all';
     const search = document.getElementById('vehicle-search')?.value.toLowerCase() || '';
     const period = document.getElementById('period-filter')?.value || 'all';
@@ -785,9 +788,30 @@ function applyFilters() {
     document.getElementById('summary-normal').textContent = filteredSummary.normal;
     document.getElementById('summary-bad').textContent = filteredSummary.bad;
     
+    // 차종 필터가 변경되었으면 배터리 점수 통계 업데이트
+    if (previousCarType !== carType) {
+        previousCarType = carType;
+        await updateBatteryScoreForCarType(carType);
+    }
+    
     updateVehicleTable();
     drawBarChart();
     drawDonutChart(filteredSummary);
+}
+
+// 차종별 배터리 점수 통계 업데이트
+async function updateBatteryScoreForCarType(carType) {
+    try {
+        const url = carType === 'all' ? '/api/stats' : `/api/stats?car_type=${encodeURIComponent(carType)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.battery_score) {
+            updateBatteryScore(data.battery_score);
+        }
+    } catch (error) {
+        console.error('배터리 점수 통계 업데이트 실패:', error);
+    }
 }
 
 // 차량 상세 분석 모달 열기
