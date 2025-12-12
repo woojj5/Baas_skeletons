@@ -797,7 +797,7 @@ def api_vehicle_detail(car_id):
                 "unit": "km/kWh",
                 "percentile": percentiles["efficiency"],
                 "contribution": round(contribution_eff, 1),
-                "summary": f"효율 {round(float(efficiency), 2) if efficiency else 0} km/kWh → 점수 {round(efficiency_score, 1)} (백분위 {percentiles['efficiency']}%) · 기여 {round(contribution_eff, 1)}점"
+                "summary": f"효율 {round(float(efficiency), 2) if efficiency else 'N/A'} km/kWh → 점수 {round(efficiency_score, 1)} (백분위 {percentiles['efficiency']}%) · 기여 {round(contribution_eff, 1)}점" if efficiency else "효율 데이터 없음"
             },
             "temperature": {
                 "score": round(temperature_score, 1),
@@ -806,7 +806,7 @@ def api_vehicle_detail(car_id):
                 "unit": "℃",
                 "percentile": percentiles["temperature"],
                 "contribution": round(contribution_temp, 1),
-                "summary": f"평균 온도 {round(float(avg_temperature), 1) if avg_temperature else 0}℃ → 점수 {round(temperature_score, 1)} (백분위 {percentiles['temperature']}%) · 기여 {round(contribution_temp, 1)}점"
+                "summary": f"평균 온도 {round(float(avg_temperature), 1) if avg_temperature else 'N/A'}℃ → 점수 {round(temperature_score, 1)} (백분위 {percentiles['temperature']}%) · 기여 {round(contribution_temp, 1)}점" if avg_temperature else "온도 데이터 없음"
             },
             "cell_imbalance": {
                 "score": round(cell_imbalance_score, 1),
@@ -815,7 +815,7 @@ def api_vehicle_detail(car_id):
                 "unit": "V",
                 "percentile": percentiles["cell_imbalance"],
                 "contribution": round(contribution_cell, 1),
-                "summary": f"평균 셀 편차 {round(float(cell_imbalance), 4) if cell_imbalance else 0} V → 점수 {round(cell_imbalance_score, 1)} (백분위 {percentiles['cell_imbalance']}%) · 기여 {round(contribution_cell, 1)}점"
+                "summary": f"평균 셀 편차 {round(float(cell_imbalance), 4) if cell_imbalance else 'N/A'} V → 점수 {round(cell_imbalance_score, 1)} (백분위 {percentiles['cell_imbalance']}%) · 기여 {round(contribution_cell, 1)}점" if cell_imbalance else "셀 밸런스 데이터 없음"
             },
             "driving_habit": {
                 "score": round(driving_habit_score, 1),

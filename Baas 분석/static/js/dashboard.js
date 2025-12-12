@@ -1079,6 +1079,9 @@ function updateContributionDetails(details) {
 function updateContributionItem(prefix, item, color) {
     if (!item) return;
     
+    // 실제 데이터가 있는지 확인 (efficiency, temperature의 경우 value가 있어야 함)
+    const hasData = item.value !== null && item.value !== undefined && item.value !== '';
+    
     // 점수 변화량 표시
     const scoreChangeEl = document.getElementById(`detail-${prefix}-score-change`);
     if (scoreChangeEl && item.score !== undefined) {
@@ -1101,14 +1104,24 @@ function updateContributionItem(prefix, item, color) {
         summaryEl.textContent = item.summary;
     }
     
-    // 시계열 차트 그리기
-    drawTimeSeriesChart(`detail-${prefix}-chart`, item.score || 0, color);
+    // 모든 시계열 차트 컨테이너 숨김 (기여도 상세에서는 사용하지 않음)
+    const chartContainer = document.querySelector(`#detail-${prefix}-chart`)?.parentElement;
+    if (chartContainer) {
+        chartContainer.style.display = 'none';
+    }
     
     // 효율 항목의 "자세히" 버튼에 이벤트 리스너 추가
     if (prefix === 'efficiency') {
         const detailBtn = summaryEl?.parentElement?.querySelector('.detail-btn');
         if (detailBtn) {
-            detailBtn.onclick = openEfficiencyDetail;
+            detailBtn.onclick = function() {
+                // 데이터가 없으면 경고창만 띄우기
+                if (!hasData) {
+                    alert('효율 데이터가 없어 효율 상세 분석을 제공할 수 없습니다.');
+                    return;
+                }
+                openEfficiencyDetail();
+            };
         }
     }
     
@@ -1116,7 +1129,14 @@ function updateContributionItem(prefix, item, color) {
     if (prefix === 'temperature') {
         const detailBtn = summaryEl?.parentElement?.querySelector('.detail-btn');
         if (detailBtn) {
-            detailBtn.onclick = openTemperatureDetail;
+            detailBtn.onclick = function() {
+                // 데이터가 없으면 경고창만 띄우기
+                if (!hasData) {
+                    alert('온도 데이터가 없어 온도 상세 분석을 제공할 수 없습니다.');
+                    return;
+                }
+                openTemperatureDetail();
+            };
         }
     }
     
@@ -1124,7 +1144,14 @@ function updateContributionItem(prefix, item, color) {
     if (prefix === 'cell') {
         const detailBtn = summaryEl?.parentElement?.querySelector('.detail-btn');
         if (detailBtn) {
-            detailBtn.onclick = openCellBalanceDetail;
+            detailBtn.onclick = function() {
+                // 데이터가 없으면 경고창만 띄우기
+                if (!hasData) {
+                    alert('셀 밸런스 데이터가 없어 셀 밸런스 상세 분석을 제공할 수 없습니다.');
+                    return;
+                }
+                openCellBalanceDetail();
+            };
         }
     }
 }
@@ -1419,7 +1446,8 @@ function drawTemperatureConversionChart(avgTemperature, score) {
     let displayWidth, displayHeight;
     
     if (container) {
-        displayWidth = container.clientWidth - 30;
+        // 음수 방지: 최소 100px 보장
+        displayWidth = Math.max(100, container.clientWidth - 30);
         displayHeight = 300;
     } else {
         displayWidth = 1200;
@@ -1430,8 +1458,8 @@ function drawTemperatureConversionChart(avgTemperature, score) {
     canvas.width = Math.max(displayWidth, 1200);
     canvas.height = Math.max(displayHeight, 450);
     
-    // CSS로 표시 크기 설정
-    canvas.style.width = displayWidth + 'px';
+    // CSS로 표시 크기 설정 (음수 방지)
+    canvas.style.width = Math.max(100, displayWidth) + 'px';
     canvas.style.height = displayHeight + 'px';
     
     const ctx = canvas.getContext('2d');
@@ -2502,7 +2530,8 @@ function drawEfficiencyConversionChart(avgEfficiency, minVal, maxVal, score) {
     let displayWidth, displayHeight;
     
     if (container) {
-        displayWidth = container.clientWidth - 30;
+        // 음수 방지: 최소 100px 보장
+        displayWidth = Math.max(100, container.clientWidth - 30);
         displayHeight = 300;
     } else {
         displayWidth = 1200;
@@ -2513,8 +2542,8 @@ function drawEfficiencyConversionChart(avgEfficiency, minVal, maxVal, score) {
     canvas.width = Math.max(displayWidth, 1200);
     canvas.height = Math.max(displayHeight, 450);
     
-    // CSS로 표시 크기 설정
-    canvas.style.width = displayWidth + 'px';
+    // CSS로 표시 크기 설정 (음수 방지)
+    canvas.style.width = Math.max(100, displayWidth) + 'px';
     canvas.style.height = displayHeight + 'px';
     
     const ctx = canvas.getContext('2d');
