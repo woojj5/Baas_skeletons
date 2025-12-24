@@ -7,7 +7,6 @@
 ```text
 c:\Users\jeon9\Downloads\Baas 분석\Baas 분석\
   ├── dashboard.py               # Flask 기반 웹 대시보드 서버
-  ├── vehicle_battery_scorer.py  # InfluxDB 연동 배터리 점수 계산 엔진
   ├── requirements.txt           # Python 라이브러리 의존성 파일
   │
   ├── db datasets/               # 분석을 위한 원천 CSV 데이터셋
